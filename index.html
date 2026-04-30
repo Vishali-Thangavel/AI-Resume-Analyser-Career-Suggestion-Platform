@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumAI – AI Resume Analyzer</title>
+<link rel="stylesheet" href="/static/css/main.css">
+<style>
+/* ── HERO ─────────────────────────────────────────────────────────── */
+.hero {
+  min-height: 100vh; display: flex; align-items: center;
+  padding: 80px 5% 0; position: relative; overflow: hidden;
+}
+.hero-glow {
+  position: absolute; width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,212,177,.18) 0%, transparent 70%);
+  top: 5%; left: 50%; transform: translateX(-50%); pointer-events: none;
+}
+.hero-inner {
+  max-width: 1200px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+}
+.hero-kicker {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: rgba(0,212,177,.1); border: 1px solid rgba(0,212,177,.25);
+  border-radius: 20px; padding: .35rem 1rem; font-size: .8rem; font-weight: 600;
+  color: var(--teal); margin-bottom: 1.5rem;
+}
+.hero h1 {
+  font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 800; line-height: 1.1;
+  letter-spacing: -1px; margin-bottom: 1.2rem;
+}
+.hero h1 em { color: var(--teal); font-style: normal; }
+.hero p { color: var(--muted); font-size: 1.05rem; max-width: 480px; margin-bottom: 2rem; }
+
+.hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3rem; }
+
+.hero-chips { display: flex; gap: .6rem; flex-wrap: wrap; }
+.chip {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 20px; padding: .3rem .8rem; font-size: .78rem; color: var(--muted);
+}
+.chip svg { width: 13px; height: 13px; }
+
+/* ── SCORE CARD DEMO ─────────────────────────────────────────────── */
+.hero-visual {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 2rem; box-shadow: 0 24px 64px rgba(0,0,0,.5);
+  position: relative;
+}
+.score-ring-wrap { display: flex; justify-content: center; margin-bottom: 1.5rem; }
+.score-ring {
+  width: 130px; height: 130px; position: relative;
+}
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring .ring-bg { fill: none; stroke: var(--navy-3); stroke-width: 10; }
+.score-ring .ring-fill {
+  fill: none; stroke: var(--teal); stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 345; stroke-dashoffset: 69; /* ~80% */
+  transition: stroke-dashoffset 1.5s ease;
+}
+.score-label {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.score-label .num { font-family: var(--font-head); font-size: 2rem; font-weight: 800; color: var(--teal); }
+.score-label .sub { font-size: .7rem; color: var(--muted); }
+
+.analysis-rows { display: flex; flex-direction: column; gap: .7rem; }
+.a-row { display: flex; align-items: center; gap: .8rem; }
+.a-row .label { flex: 1; font-size: .82rem; color: var(--muted); }
+.a-row .bar { flex: 2; height: 5px; border-radius: 3px; background: var(--navy-3); overflow: hidden; }
+.a-row .fill { height: 100%; border-radius: 3px; }
+.a-row .val { font-size: .78rem; font-weight: 600; min-width: 30px; text-align: right; }
+
+/* ── FEATURES ─────────────────────────────────────────────────────── */
+.features { padding: 6rem 5%; max-width: 1200px; margin: 0 auto; }
+.feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.feat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.8rem;
+  transition: transform .25s, border-color .25s;
+}
+.feat-card:hover { transform: translateY(-4px); border-color: rgba(0,212,177,.3); }
+.feat-icon { width: 44px; height: 44px; border-radius: 10px; background: rgba(0,212,177,.12); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.3rem; }
+.feat-card h3 { font-size: 1rem; margin-bottom: .4rem; }
+.feat-card p { font-size: .85rem; color: var(--muted); }
+
+/* ── STEPS ────────────────────────────────────────────────────────── */
+.steps { padding: 4rem 5%; max-width: 1000px; margin: 0 auto; }
+.step-list { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2.5rem; }
+.step { display: flex; gap: 1.5rem; align-items: flex-start; }
+.step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--teal); color: var(--navy); display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 800; font-size: .9rem; flex-shrink: 0; }
+.step-body h4 { margin-bottom: .2rem; }
+.step-body p { font-size: .875rem; color: var(--muted); }
+
+/* ── CTA BANNER ──────────────────────────────────────────────────── */
+.cta-banner {
+  margin: 4rem 5%; border-radius: 20px;
+  background: linear-gradient(135deg, rgba(0,212,177,.12), rgba(245,158,11,.08));
+  border: 1px solid rgba(0,212,177,.2);
+  padding: 3.5rem 4rem; text-align: center;
+}
+.cta-banner h2 { font-size: 2rem; margin-bottom: .8rem; }
+.cta-banner p { color: var(--muted); margin-bottom: 2rem; }
+
+/* ── FOOTER ──────────────────────────────────────────────────────── */
+footer {
+  text-align: center; padding: 2rem; border-top: 1px solid var(--border);
+  color: var(--muted); font-size: .8rem;
+}
+
+@media(max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .hero-visual { max-width: 500px; margin: 0 auto; }
+  .cta-banner { padding: 2.5rem 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="logo" href="/">Resum<span>AI</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="/" class="active">Home</a></li>
+    <li><a href="/analyzer">Analyzer</a></li>
+    <li><a href="/builder">Builder</a></li>
+    <li><a href="#features">About</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="/login" class="btn btn-ghost" id="loginBtn">Login</a>
+    <a href="/register" class="btn btn-primary" id="signupBtn">Get Started</a>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-kicker">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Powered by Advanced NLP + AI
+      </div>
+      <h1>Analyze Your Resume with <em>AI Precision</em></h1>
+      <p>Upload your resume, paste a job description, and get an instant ATS compatibility score, skill gap report, and personalized career advice.</p>
+      <div class="hero-ctas">
+        <a href="/analyzer" class="btn btn-primary btn-lg">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Analyze My Resume
+        </a>
+        <a href="#features" class="btn btn-outline btn-lg">See Features</a>
+      </div>
+      <div class="hero-chips">
+        <span class="chip">⚡ Instant Analysis</span>
+        <span class="chip">🤖 AI Powered</span>
+        <span class="chip">🎯 ATS Check</span>
+        <span class="chip">📊 Smart Insights</span>
+      </div>
+    </div>
+
+    <!-- LIVE DEMO CARD -->
+    <div class="hero-visual">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:1rem;">Sample Analysis Result</div>
+      <div class="score-ring-wrap">
+        <div class="score-ring">
+          <svg viewBox="0 0 120 120" width="130" height="130">
+            <circle class="ring-bg" cx="60" cy="60" r="55"/>
+            <circle class="ring-fill" cx="60" cy="60" r="55" id="demoRing"/>
+          </svg>
+          <div class="score-label">
+            <span class="num" id="demoScore">0</span>
+            <span class="sub">/ 100</span>
+          </div>
+        </div>
+      </div>
+      <div class="analysis-rows">
+        <div class="a-row">
+          <div class="label">ATS Score</div>
+          <div class="bar"><div class="fill" style="width:80%;background:var(--green)"></div></div>
+          <div class="val" style="color:var(--green)">80</div>
+        </div>
+        <div class="a-row">
+          <div class="label">Skill Match</div>
+          <div class="bar"><div class="fill" style="width:75%;background:var(--teal)"></div></div>
+          <div class="val" style="color:var(--teal)">75</div>
+        </div>
+        <div class="a-row">
+          <div class="label">Experience</div>
+          <div class="bar"><div class="fill" style="width:90%;background:var(--amber)"></div></div>
+          <div class="val" style="color:var(--amber)">90</div>
+        </div>
+        <div class="a-row">
+          <div class="label">Keywords</div>
+          <div class="bar"><div class="fill" style="width:60%;background:var(--rose)"></div></div>
+          <div class="val" style="color:var(--rose)">60</div>
+        </div>
+      </div>
+      <div style="margin-top:1.2rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+        <span class="badge badge-green">✓ Python</span>
+        <span class="badge badge-green">✓ SQL</span>
+        <span class="badge badge-rose">✗ Docker</span>
+        <span class="badge badge-rose">✗ Kubernetes</span>
+        <span class="badge badge-teal">+ 3 more</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div style="text-align:center;">
+    <span class="section-tag">Features</span>
+    <h2 style="font-size:2rem;">Everything you need to land the job</h2>
+  </div>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon">🎯</div>
+      <h3>ATS Compatibility</h3>
+      <p>Check if your resume passes Applicant Tracking Systems before it reaches a recruiter.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔍</div>
+      <h3>Skill Gap Analysis</h3>
+      <p>See exactly which skills are missing for your target role with intelligent matching.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📊</div>
+      <h3>Resume Score</h3>
+      <p>Get a 0–100 score covering ATS, skills, format, and keyword usage.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🤖</div>
+      <h3>AI Suggestions</h3>
+      <p>Get actionable, AI-generated tips to improve your resume immediately.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📄</div>
+      <h3>Resume Builder</h3>
+      <p>Generate a polished ATS-friendly resume tailored to any job description.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">💌</div>
+      <h3>Cover Letters</h3>
+      <p>Auto-generate professional cover letters customized for each application.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STEPS -->
+<section class="steps">
+  <div style="text-align:center;">
+    <span class="section-tag">How it works</span>
+    <h2 style="font-size:2rem;">Three steps to your dream job</h2>
+  </div>
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Upload or Paste Your Resume</h4>
+        <p>Supports PDF, DOCX, and plain text. We extract and parse everything automatically.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Add the Job Description</h4>
+        <p>Paste the job posting or just enter the role title. Our AI maps requirements instantly.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Get Your Detailed Report</h4>
+        <p>Review your ATS score, skill gaps, positives, weaknesses, and personalized suggestions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-banner">
+  <h2>Ready to optimize your resume?</h2>
+  <p>Join thousands of job seekers who landed interviews with ResumAI</p>
+  <a href="/analyzer" class="btn btn-primary btn-lg">Start Free Analysis →</a>
+</div>
+
+<footer>© 2025 ResumAI · Built with ❤️ for job seekers everywhere</footer>
+
+<div id="toast"></div>
+
+<script src="/static/js/main.js"></script>
+<script>
+  // Animate demo score counter
+  let target = 82, current = 0;
+  const scoreEl = document.getElementById('demoScore');
+  const ringEl = document.getElementById('demoRing');
+  const circumference = 345;
+  const timer = setInterval(() => {
+    current += 2;
+    if (current >= target) { current = target; clearInterval(timer); }
+    scoreEl.textContent = current;
+    const offset = circumference - (circumference * current / 100);
+    ringEl.style.strokeDashoffset = offset;
+  }, 25);
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Builder – ResumAI</title>
+<link rel="stylesheet" href="/static/css/main.css">
+<style>
+.page-wrap { padding: 88px 5% 3rem; max-width: 1100px; margin: 0 auto; }
+.builder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+.panel { padding: 1.8rem; }
+.panel-title { font-family:var(--font-head); font-size:1rem; font-weight:700; margin-bottom:1.2rem; }
+.form-group { margin-bottom:1.2rem; }
+.preview-box { background:var(--navy-3); border-radius:8px; padding:1.5rem; min-height:300px; font-size:.85rem; line-height:1.8; white-space:pre-wrap; color:var(--text); }
+.placeholder-msg { color:var(--muted); text-align:center; padding:3rem 1rem; }
+@media(max-width:900px){ .builder-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="logo" href="/">Resum<span>AI</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="/">Home</a></li>
+    <li><a href="/analyzer">Analyzer</a></li>
+    <li><a href="/builder" class="active">Builder</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="/login" class="btn btn-ghost" id="loginBtn">Login</a>
+    <a href="/register" class="btn btn-primary" id="signupBtn">Sign Up</a>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <span class="section-tag">Resume Builder</span>
+  <h1 style="font-size:1.9rem;">AI-Powered Resume Generator</h1>
+  <p style="color:var(--muted);margin-top:.4rem;">Fill in your details and let AI craft a professional, ATS-optimized resume.</p>
+
+  <div class="builder-grid">
+    <div class="card panel">
+      <div class="panel-title">📝 Your Information</div>
+
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" id="bName" placeholder="Jane Smith">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Target Job Role</label>
+        <input class="form-input" id="bRole" placeholder="Software Engineer">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" id="bEmail" placeholder="jane@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <input class="form-input" id="bPhone" placeholder="+1 555 000 0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Skills (comma-separated)</label>
+        <input class="form-input" id="bSkills" placeholder="Python, SQL, Machine Learning, Docker">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Work Experience</label>
+        <textarea class="form-textarea" id="bExp" rows="4" placeholder="Company, Role, Dates, Achievements…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Education</label>
+        <input class="form-input" id="bEdu" placeholder="B.Sc. Computer Science, XYZ University, 2023">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Job Description (optional, for tailoring)</label>
+        <textarea class="form-textarea" id="bJD" rows="3" placeholder="Paste target JD for AI tailoring…"></textarea>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%" onclick="generateResume()">🤖 Generate Resume</button>
+    </div>
+
+    <div class="card panel">
+      <div class="panel-title">👁 Preview</div>
+      <div id="preview" class="preview-box">
+        <div class="placeholder-msg">
+          <div style="font-size:2rem;margin-bottom:.8rem;">📄</div>
+          <p>Fill in the form and click <strong style="color:var(--teal)">Generate Resume</strong> to see your AI-crafted resume here.</p>
+        </div>
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:.8rem;flex-wrap:wrap;" id="previewActions" style="display:none;">
+        <button class="btn btn-outline" onclick="copyResume()">📋 Copy Text</button>
+        <button class="btn btn-primary" onclick="downloadResume()">⬇ Download .txt</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="/static/js/main.js"></script>
+<script>
+let generatedText = '';
+
+function generateResume() {
+  const name    = document.getElementById('bName').value.trim();
+  const role    = document.getElementById('bRole').value.trim();
+  const email   = document.getElementById('bEmail').value.trim();
+  const phone   = document.getElementById('bPhone').value.trim();
+  const skills  = document.getElementById('bSkills').value.trim();
+  const exp     = document.getElementById('bExp').value.trim();
+  const edu     = document.getElementById('bEdu').value.trim();
+  const jd      = document.getElementById('bJD').value.trim();
+
+  if (!name || !role) { showToast('Name and Job Role are required', 'error'); return; }
+
+  const jdNote = jd ? `\n\n[Tailored for: ${jd.substring(0, 60)}…]` : '';
+
+  generatedText = `${name.toUpperCase()}
+${role}
+${email}${phone ? ' · ' + phone : ''}
+────────────────────────────────────────────────────────
+
+PROFESSIONAL SUMMARY
+${name.split(' ')[0]} is a results-driven ${role} with a strong foundation in modern technologies and a track record of delivering impactful solutions. Passionate about leveraging data and engineering to solve real-world problems.
+
+────────────────────────────────────────────────────────
+SKILLS
+${skills ? skills.split(',').map(s => '• ' + s.trim()).join('\n') : '• [Add your skills]'}
+
+────────────────────────────────────────────────────────
+WORK EXPERIENCE
+${exp ? exp : '• [Add your experience]'}
+
+────────────────────────────────────────────────────────
+EDUCATION
+${edu ? '• ' + edu : '• [Add your education]'}
+
+────────────────────────────────────────────────────────
+CERTIFICATIONS & PROJECTS
+• [Add certifications, open-source projects, or portfolios here]
+${jdNote}`;
+
+  document.getElementById('preview').textContent = generatedText;
+  document.getElementById('previewActions').style.display = 'flex';
+  showToast('Resume generated successfully!', 'success');
+}
+
+function copyResume() {
+  navigator.clipboard.writeText(generatedText).then(() => showToast('Copied to clipboard!', 'success'));
+}
+
+function downloadResume() {
+  const blob = new Blob([generatedText], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'resume.txt';
+  a.click();
+}
+</script>
+</body>
+</html>

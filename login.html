@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login – ResumAI</title>
+<link rel="stylesheet" href="/static/css/main.css">
+<style>
+body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding: 1rem; }
+.auth-card { width:100%; max-width:420px; padding:2.5rem; }
+.auth-logo { text-align:center; margin-bottom:2rem; }
+.auth-logo a { font-family:var(--font-head); font-size:1.8rem; font-weight:800; color:var(--teal); text-decoration:none; }
+.auth-logo a span { color:var(--amber); }
+h2 { font-size:1.5rem; margin-bottom:.4rem; text-align:center; }
+.auth-sub { color:var(--muted); font-size:.875rem; text-align:center; margin-bottom:2rem; }
+.form-group { margin-bottom:1.2rem; }
+.auth-footer { text-align:center; margin-top:1.5rem; font-size:.85rem; color:var(--muted); }
+.auth-footer a { color:var(--teal); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="card auth-card">
+  <div class="auth-logo"><a href="/">Resum<span>AI</span></a></div>
+  <h2>Welcome back</h2>
+  <p class="auth-sub">Sign in to access your resume history</p>
+
+  <div class="form-group">
+    <label class="form-label">Email</label>
+    <input type="email" class="form-input" id="email" placeholder="you@example.com">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Password</label>
+    <input type="password" class="form-input" id="password" placeholder="Your password">
+  </div>
+
+  <button class="btn btn-primary" style="width:100%;padding:.8rem;font-size:1rem;" onclick="doLogin()">Sign In</button>
+
+  <div class="auth-footer">
+    Don't have an account? <a href="/register">Create one free</a>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="/static/js/main.js"></script>
+<script>
+async function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if (!email || !password) { showToast('Please fill all fields', 'error'); return; }
+  try {
+    const res = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({email,password}) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    showToast('Welcome back, ' + data.username + '!', 'success');
+    setTimeout(() => window.location.href='/', 1000);
+  } catch(e) { showToast(e.message, 'error'); }
+}
+document.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>

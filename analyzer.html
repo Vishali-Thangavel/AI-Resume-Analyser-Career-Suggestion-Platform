@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analyzer – ResumAI</title>
+<link rel="stylesheet" href="/static/css/main.css">
+<style>
+.page-wrap { padding-top: 88px; min-height: 100vh; }
+.page-header { padding: 2.5rem 5% 1.5rem; }
+.page-header h1 { font-size: 1.9rem; }
+.page-header p { color: var(--muted); margin-top: .4rem; }
+
+.analyzer-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+  padding: 0 5% 3rem; max-width: 1300px; margin: 0 auto;
+}
+
+.panel { padding: 1.8rem; }
+.panel-title {
+  font-family: var(--font-head); font-size: 1rem; font-weight: 700;
+  margin-bottom: 1.4rem; display: flex; align-items: center; gap: .5rem;
+}
+
+/* Upload zone */
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: 10px;
+  padding: 2.5rem 1.5rem; text-align: center; cursor: pointer;
+  transition: all .2s; background: var(--navy-3);
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--teal); background: rgba(0,212,177,.05); }
+.upload-icon { font-size: 2.5rem; margin-bottom: .8rem; }
+.upload-zone p { color: var(--muted); font-size: .875rem; }
+.upload-zone strong { color: var(--teal); cursor: pointer; }
+#fileInput { display: none; }
+
+.divider { margin: 1.2rem 0; }
+
+/* Analyze button */
+.analyze-wrap { padding: 0 5% 3rem; max-width: 1300px; margin: 0 auto; }
+.analyze-btn-row { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+/* Loading state */
+.loading-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(10,14,26,.85); backdrop-filter: blur(6px);
+  align-items: center; justify-content: center; flex-direction: column; gap: 1.5rem;
+}
+.loading-overlay.show { display: flex; }
+.spinner { width: 52px; height: 52px; border: 4px solid var(--navy-3); border-top-color: var(--teal); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: var(--text); font-family: var(--font-head); font-size: 1.1rem; }
+
+/* Tabs */
+.tab-row { display: flex; gap: .3rem; margin-bottom: 1.2rem; background: var(--navy-3); padding: .3rem; border-radius: 8px; }
+.tab { flex: 1; padding: .5rem; border-radius: 6px; border: none; background: transparent; color: var(--muted); font-family: var(--font-body); font-size: .85rem; cursor: pointer; transition: all .15s; }
+.tab.active { background: var(--card); color: var(--teal); font-weight: 600; }
+
+/* Info chips */
+.info-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
+
+@media(max-width: 900px) {
+  .analyzer-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="logo" href="/">Resum<span>AI</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="/">Home</a></li>
+    <li><a href="/analyzer" class="active">Analyzer</a></li>
+    <li><a href="/builder">Builder</a></li>
+  </ul>
+  <div class="nav-actions">
+    <span id="navUser" style="font-size:.85rem;color:var(--muted)"></span>
+    <a href="/login" class="btn btn-ghost" id="loginBtn">Login</a>
+    <a href="/register" class="btn btn-primary" id="signupBtn">Sign Up</a>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+  </div>
+</nav>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Analyzing your resume…</div>
+  <div style="color:var(--muted);font-size:.85rem;">This takes 2–5 seconds</div>
+</div>
+
+<div class="page-wrap">
+  <div class="page-header">
+    <span class="section-tag">Resume Analyzer</span>
+    <h1>Check ATS Compatibility & Skill Match</h1>
+    <p>Upload your resume and a job description to get an instant detailed analysis.</p>
+  </div>
+
+  <div class="analyzer-grid">
+    <!-- LEFT: RESUME -->
+    <div class="card panel">
+      <div class="panel-title">📄 Your Resume</div>
+      <div class="tab-row">
+        <button class="tab active" onclick="switchTab('upload')">Upload File</button>
+        <button class="tab" onclick="switchTab('paste')">Paste Text</button>
+      </div>
+
+      <!-- Upload tab -->
+      <div id="tabUpload">
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon">📂</div>
+          <p><strong>Click to upload</strong> or drag & drop</p>
+          <p style="margin-top:.4rem;">PDF, DOCX, TXT supported · Max 5MB</p>
+          <input type="file" id="fileInput" accept=".pdf,.docx,.txt">
+        </div>
+        <div id="fileInfo" style="display:none;margin-top:1rem;" class="badge badge-green"></div>
+      </div>
+
+      <!-- Paste tab -->
+      <div id="tabPaste" style="display:none">
+        <textarea class="form-textarea" id="resumeText" rows="14" placeholder="Paste your full resume text here…"></textarea>
+        <div class="info-row">
+          <span class="badge badge-muted" id="wordCountBadge">0 words</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: JOB INFO -->
+    <div class="card panel">
+      <div class="panel-title">💼 Job Details</div>
+      <div class="form-group" style="margin-bottom:1.2rem;">
+        <label class="form-label">Job Role / Title</label>
+        <input class="form-input" id="jobRole" placeholder="e.g. Data Scientist, Frontend Developer" />
+      </div>
+      <div class="form-group" style="margin-bottom:1.2rem;">
+        <label class="form-label">Job Description</label>
+        <textarea class="form-textarea" id="jobDesc" rows="10" placeholder="Paste the full job description here for best results…"></textarea>
+      </div>
+      <div class="info-row">
+        <span class="chip">💡 More detail = better analysis</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYZE BUTTON -->
+  <div class="analyze-wrap">
+    <div class="analyze-btn-row">
+      <button class="btn btn-primary btn-lg" onclick="runAnalysis()" id="analyzeBtn">
+        🔍 Check Compatibility
+      </button>
+      <button class="btn btn-ghost btn-lg" onclick="clearAll()">Clear All</button>
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:.8rem;margin-top:1rem;">
+      Free analysis · No account required · Results shown instantly
+    </p>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="/static/js/main.js"></script>
+<script>
+let uploadedFile = null;
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tabUpload').style.display = tab === 'upload' ? 'block' : 'none';
+  document.getElementById('tabPaste').style.display = tab === 'paste' ? 'block' : 'none';
+}
+
+// Drag & drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
+document.getElementById('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
+
+function handleFile(file) {
+  if (!file) return;
+  const maxSize = 5 * 1024 * 1024;
+  if (file.size > maxSize) { showToast('File too large (max 5 MB)', 'error'); return; }
+  uploadedFile = file;
+  const info = document.getElementById('fileInfo');
+  info.style.display = 'inline-block';
+  info.textContent = `✓ ${file.name} (${(file.size/1024).toFixed(0)} KB)`;
+}
+
+document.getElementById('resumeText').addEventListener('input', function() {
+  const words = this.value.trim().split(/\s+/).filter(Boolean).length;
+  document.getElementById('wordCountBadge').textContent = words + ' words';
+});
+
+async function runAnalysis() {
+  const btn = document.getElementById('analyzeBtn');
+  const jobRole = document.getElementById('jobRole').value.trim();
+  const jobDesc = document.getElementById('jobDesc').value.trim();
+  const resumeText = document.getElementById('resumeText').value.trim();
+
+  if (!uploadedFile && !resumeText) {
+    showToast('Please upload a resume or paste your resume text.', 'error'); return;
+  }
+
+  document.getElementById('loadingOverlay').classList.add('show');
+  btn.disabled = true;
+
+  try {
+    let response;
+    if (uploadedFile) {
+      const fd = new FormData();
+      fd.append('resume_file', uploadedFile);
+      fd.append('job_role', jobRole);
+      fd.append('job_description', jobDesc);
+      response = await fetch('/api/analyze', { method: 'POST', body: fd, credentials: 'include' });
+    } else {
+      response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ resume_text: resumeText, job_role: jobRole, job_description: jobDesc })
+      });
+    }
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Analysis failed');
+    sessionStorage.setItem('analysisResult', JSON.stringify(data));
+    window.location.href = '/result';
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    document.getElementById('loadingOverlay').classList.remove('show');
+    btn.disabled = false;
+  }
+}
+
+function clearAll() {
+  uploadedFile = null;
+  document.getElementById('resumeText').value = '';
+  document.getElementById('jobRole').value = '';
+  document.getElementById('jobDesc').value = '';
+  document.getElementById('fileInfo').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('wordCountBadge').textContent = '0 words';
+}
+</script>
+</body>
+</html>
