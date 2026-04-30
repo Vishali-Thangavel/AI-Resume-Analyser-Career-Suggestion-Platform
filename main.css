@@ -1,0 +1,185 @@
+/* ══════════════════════════════════════════════════════════════
+   ResumAI — Design System
+   Theme: Deep navy + electric teal + warm amber accents
+   ══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+
+:root {
+  --navy:      #0a0e1a;
+  --navy-2:    #111827;
+  --navy-3:    #1a2235;
+  --card:      #151c2e;
+  --teal:      #00d4b1;
+  --teal-dim:  #00a88d;
+  --amber:     #f59e0b;
+  --rose:      #f43f5e;
+  --green:     #10b981;
+  --text:      #e2e8f0;
+  --muted:     #64748b;
+  --border:    rgba(255,255,255,0.07);
+  --glass:     rgba(255,255,255,0.04);
+  --shadow:    0 8px 32px rgba(0,0,0,0.4);
+  --radius:    14px;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--navy);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── SCROLLBAR ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--navy); }
+::-webkit-scrollbar-thumb { background: var(--teal-dim); border-radius: 3px; }
+
+/* ── NAVBAR ────────────────────────────────────────────────── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5%; height: 68px;
+  background: rgba(10,14,26,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-family: var(--font-head);
+  font-size: 1.4rem; font-weight: 800;
+  color: var(--teal);
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+.logo span { color: var(--amber); }
+
+.nav-links { display: flex; gap: 2rem; list-style: none; }
+.nav-links a {
+  color: var(--muted); text-decoration: none;
+  font-size: .9rem; font-weight: 500; transition: color .2s;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--teal); }
+
+.nav-actions { display: flex; gap: .8rem; align-items: center; }
+
+/* ── BUTTONS ───────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: .45rem;
+  padding: .6rem 1.4rem; border-radius: 8px; font-size: .875rem;
+  font-weight: 600; cursor: pointer; border: none; text-decoration: none;
+  transition: all .2s; white-space: nowrap; font-family: var(--font-body);
+}
+.btn-primary {
+  background: var(--teal); color: var(--navy);
+}
+.btn-primary:hover { background: var(--teal-dim); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,212,177,.35); }
+
+.btn-outline {
+  background: transparent; color: var(--teal);
+  border: 1.5px solid var(--teal);
+}
+.btn-outline:hover { background: rgba(0,212,177,.1); }
+
+.btn-ghost {
+  background: var(--glass); color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: rgba(255,255,255,.08); }
+
+.btn-amber { background: var(--amber); color: #1a1000; }
+.btn-amber:hover { background: #d97706; transform: translateY(-1px); }
+
+.btn-lg { padding: .85rem 2rem; font-size: 1rem; border-radius: 10px; }
+
+/* ── CARDS ─────────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ── FORM ELEMENTS ─────────────────────────────────────────── */
+.form-group { display: flex; flex-direction: column; gap: .5rem; }
+.form-label { font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+
+.form-input, .form-textarea, .form-select {
+  background: var(--navy-3);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: .9rem;
+  padding: .75rem 1rem;
+  transition: border-color .2s;
+  width: 100%;
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  outline: none; border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(0,212,177,.12);
+}
+.form-textarea { resize: vertical; min-height: 120px; }
+
+/* ── BADGE ─────────────────────────────────────────────────── */
+.badge {
+  display: inline-block; padding: .2rem .6rem; border-radius: 20px;
+  font-size: .75rem; font-weight: 600;
+}
+.badge-teal   { background: rgba(0,212,177,.15); color: var(--teal); }
+.badge-amber  { background: rgba(245,158,11,.15); color: var(--amber); }
+.badge-rose   { background: rgba(244,63,94,.15);  color: var(--rose); }
+.badge-green  { background: rgba(16,185,129,.15); color: var(--green); }
+.badge-muted  { background: rgba(100,116,139,.15); color: var(--muted); }
+
+/* ── SECTION TITLE ─────────────────────────────────────────── */
+.section-tag {
+  font-size: .75rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--teal);
+  display: inline-block; margin-bottom: .5rem;
+}
+h1,h2,h3,h4 { font-family: var(--font-head); }
+
+/* ── DIVIDER ───────────────────────────────────────────────── */
+.divider { display: flex; align-items: center; gap: 1rem; color: var(--muted); font-size: .8rem; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── PROGRESS BAR ──────────────────────────────────────────── */
+.progress-bar { height: 6px; border-radius: 3px; background: var(--navy-3); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; background: var(--teal); transition: width 1s ease; }
+
+/* ── TOAST ─────────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
+  padding: 1rem 1.5rem; border-radius: 10px;
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text); font-size: .9rem; box-shadow: var(--shadow);
+  transform: translateY(100px); opacity: 0;
+  transition: all .35s cubic-bezier(.175,.885,.32,1.275);
+  max-width: 320px;
+}
+#toast.show { transform: translateY(0); opacity: 1; }
+#toast.success { border-color: var(--green); }
+#toast.error   { border-color: var(--rose); }
+
+/* ── MOBILE NAV ────────────────────────────────────────────── */
+.hamburger { display: none; background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer; }
+
+@media(max-width: 768px) {
+  .hamburger { display: block; }
+  .nav-links {
+    display: none; flex-direction: column; position: fixed;
+    top: 68px; left: 0; right: 0; background: var(--navy-2);
+    padding: 1.5rem; gap: 1.2rem; border-bottom: 1px solid var(--border);
+  }
+  .nav-links.open { display: flex; }
+  .nav-actions .btn:not(.btn-primary) { display: none; }
+}
